@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django import forms
 from django.http import HttpResponse
+from django.utils.safestring import mark_safe
 from markdown2 import Markdown
 from . import util
 
@@ -9,7 +10,7 @@ class SearchForm(forms.Form):
 
 class AddForm(forms.Form):
     addtitle = forms.CharField(label="Title")
-    addtext = forms.CharField(label="Enter text using Markdown Language", widget=forms.Textarea)
+    addtext = forms.CharField(widget=forms.Textarea, label=mark_safe('Enter text using <a href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax" target="_blank">Markdown Language</a>'))
 
 def convert(title):
     content = util.get_entry(title)
@@ -70,15 +71,24 @@ def create(request):
         })
     
     else:
+        #if request method is "POST"
+
+        #Insert form data into a variable
         create = AddForm(request.POST)
-        if create.is_valid:
+
+        if create.is_valid():
             title = create.cleaned_data["addtitle"]
             markdown_text = create.cleaned_data["addtext"]
+
+            #if title exists in form, display error message
             if util.get_entry(title):
-                return HttpResponse("unable to create new page as page currently exists")
-            html_text = convert(markdown_text)
-            return render(request, "{{% url 'new' %}}", {
-                "title": title,
-                "markdown_text": markdown_text
-            })
+                return HttpResponse("Unable to create this page as current page exists")
+            
+            else:
+                #Save entry if it's a unique title
+                util.save_entry(title, markdown_text)
+                return display(request, title)
+        
+        else:
+            return HttpResponse("404. An error has occured.")
 
