@@ -28,7 +28,7 @@ def index(request):
             return display(request,search)
         
         else:
-            return search(request, search)
+            return display(request,form)
 
     else:
         return render(request, "encyclopedia/index.html", {
@@ -37,17 +37,21 @@ def index(request):
         })
 
 def display(request, title):
-    entry = convert(title)
+    if request.method == "GET":
+        entry = convert(title)
 
-    if not entry:
-          return search(request, title)
+        if not entry:
+            return search(request, title)
+        
+        else:
+            return render(request, "encyclopedia/display.html", {
+                "title": title,
+                "content": entry,
+                "form": SearchForm
+            })
     
     else:
-        return render(request, "encyclopedia/display.html", {
-            "title": title,
-            "content": entry,
-            "form": SearchForm
-        })
+        return index(request)
     
 
 def search(request, form):
@@ -92,3 +96,38 @@ def create(request):
         else:
             return HttpResponse("404. An error has occured.")
 
+def edit(request, title):
+    content = util.get_entry(title)
+    if request.method == "POST":
+        return render(request, "encyclopedia/edit.html", {
+            "title": title,
+            "form" : SearchForm,
+            "content": content,
+        })
+
+    else:
+        entry = convert(title)
+        
+        if not entry:
+            return HttpResponse("No such page exists!")
+        
+        else:
+            return render(request, "encyclopedia/edit.html", {
+                "title": title,
+                "form": SearchForm,
+                "content": content,
+            })
+def save(request):
+    if request.method == "POST":
+        title = request.POST["title"]
+        content = request.POST["content"]
+        util.save_entry(title, content)
+        entry = convert(title)
+        return render(request, "encyclopedia/display.html", {
+            "title": title,
+            "content": entry,
+            "form": SearchForm
+        })
+
+    else:
+        return index(request)
