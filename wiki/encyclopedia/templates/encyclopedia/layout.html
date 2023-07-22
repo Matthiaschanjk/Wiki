@@ -17,13 +17,13 @@
                     {{form}}
                 </form>
                 <div>
-                    <a href="{% url 'index' %}">Home</a>
+                    <a href="{% url 'index' %}" style="color: black;">Home</a>
                 </div>
                 <div>
-                    <a href="{% url 'create' %}" style="text-decoration: none; color: black;">Create New Page</a>
+                    <a href="{% url 'create' %}" style="color: black;">Create New Page</a>
                 </div>
                 <div>
-                    Random Page
+                    <a href="{% url 'rand' %}" style="color: black;">Random Page</a>
                 </div>
                 {% block nav %}
                 {% endblock %}

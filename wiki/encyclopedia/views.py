@@ -1,3 +1,4 @@
+import random
 from django.shortcuts import render
 from django import forms
 from django.http import HttpResponse
@@ -13,6 +14,7 @@ class AddForm(forms.Form):
     addtext = forms.CharField(widget=forms.Textarea, label=mark_safe('Enter text using <a href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax" target="_blank">Markdown Language</a>'))
 
 def convert(title):
+    #converts markdown to HTML
     content = util.get_entry(title)
     if content == None:
         return None
@@ -37,21 +39,17 @@ def index(request):
         })
 
 def display(request, title):
-    if request.method == "GET":
-        entry = convert(title)
+    entry = convert(title)
 
-        if not entry:
-            return search(request, title)
+    if not entry:
+        return search(request, title)
         
-        else:
-            return render(request, "encyclopedia/display.html", {
-                "title": title,
-                "content": entry,
-                "form": SearchForm
-            })
-    
     else:
-        return index(request)
+        return render(request, "encyclopedia/display.html", {
+            "title": title,
+            "content": entry,
+            "form": SearchForm
+        })
     
 
 def search(request, form):
@@ -91,12 +89,17 @@ def create(request):
             else:
                 #Save entry if it's a unique title
                 util.save_entry(title, markdown_text)
-                return display(request, title)
+                return render(request, "encyclopedia/display.html", {
+                "title": title,
+                "content": convert(title),
+                "form": SearchForm
+            })
         
         else:
             return HttpResponse("404. An error has occured.")
 
 def edit(request, title):
+    #Allows user to edit page
     content = util.get_entry(title)
     if request.method == "POST":
         return render(request, "encyclopedia/edit.html", {
@@ -118,6 +121,7 @@ def edit(request, title):
                 "content": content,
             })
 def save(request):
+    #save page
     if request.method == "POST":
         title = request.POST["title"]
         content = request.POST["content"]
@@ -131,3 +135,9 @@ def save(request):
 
     else:
         return index(request)
+
+def rand(request):
+    #Displays random page
+    entries = util.list_entries()
+    option = random.choice(entries)
+    return display(request, option)
