@@ -1,0 +1,15 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    Create
+{% endblock %}
+
+{% block body %}
+    <h1>Write your own page!</h1>
+    <form action="{% url 'create' %}" method="post">
+        {% csrf_token %}
+        {{addform.as_p}}
+        <p></p>
+        <input type="submit">
+    </form>
+{% endblock %}
